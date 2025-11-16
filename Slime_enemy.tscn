@@ -1,0 +1,69 @@
+[gd_scene load_steps=9 format=3 uid="uid://bv1rkbn2xfv4m"]
+
+[ext_resource type="Texture2D" uid="uid://cke12erdsieh8" path="res://art/slime_green.png" id="1_arwrr"]
+[ext_resource type="Script" uid="uid://dk8dorcm76fk4" path="res://Slime.gd" id="1_muaf7"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g7u76"]
+atlas = ExtResource("1_arwrr")
+region = Rect2(0, 24, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hoewc"]
+atlas = ExtResource("1_arwrr")
+region = Rect2(24, 24, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fp0qa"]
+atlas = ExtResource("1_arwrr")
+region = Rect2(48, 24, 24, 24)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u2lwy"]
+atlas = ExtResource("1_arwrr")
+region = Rect2(72, 24, 24, 24)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_v55i7"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g7u76")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hoewc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fp0qa")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u2lwy")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_muaf7"]
+size = Vector2(10, 13)
+
+[node name="CharacterBody2D" type="CharacterBody2D" groups=["danger"]]
+script = ExtResource("1_muaf7")
+
+[node name="Sprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = SubResource("SpriteFrames_v55i7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 5.5)
+shape = SubResource("RectangleShape2D_muaf7")
+
+[node name="JumpTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+autostart = true
+
+[node name="RayFloor" type="RayCast2D" parent="."]
+exclude_parent = false
+target_position = Vector2(0, 13)
+
+[node name="RayWall" type="RayCast2D" parent="."]
+position = Vector2(0, 6)
+exclude_parent = false
+target_position = Vector2(12, 0)
+
+[connection signal="timeout" from="JumpTimer" to="." method="_on_JumpTimer_timeout"]
