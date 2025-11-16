@@ -9,19 +9,40 @@ var wall_grab = false
 var wall_jump_allowed = false
 const wall_slide_speed = 20.0
 const wall_jump_force = Vector2(200, 170)
-
 var wall_jump_timer = 0.0
 const wall_jump_gravity_delay = 0.15 # segundos sin gravedad después de saltar
+
+var is_alive = true
+var took_damage = false
 
 @onready var anim := $AnimationPlayer
 @onready var sprite := $Sprite2D
 @onready var ray_left := $WallCheckLeft
 @onready var ray_right := $WallCheckRight
+
+func _ready() -> void:
+	# Añadir al grupo 'player' para que Peligro lo detecte
+	if not is_in_group("player"):
+		add_to_group("player")
+
+
 func _physics_process(delta: float) -> void:
-	direction =  Input.get_axis("move_left", "move_right")
+	if not is_alive:
+		return
+	
+	## Detectar muerte por trampa/peligro
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+
+		if collider != null and collider.is_in_group("danger"):
+			die()
+	
 	if wall_jump_timer > 0:
 		wall_jump_timer -= delta
-		
+	
+	direction =  Input.get_axis("move_left", "move_right")
+	
 	# --- DETECTAR PARED ---
 	var touching_wall_left = ray_left.is_colliding()
 	var touching_wall_right = ray_right.is_colliding()
@@ -47,6 +68,8 @@ func _physics_process(delta: float) -> void:
 	# --- MOVIMIENTO HORIZONTAL ---
 	if not wall_grab:
 		velocity.x = direction * speed
+	else:
+		velocity.x = 0
 
 	# --- SALTO NORMAL ---
 	if is_on_floor() and Input.is_action_just_pressed("jump"):
@@ -87,7 +110,18 @@ func _physics_process(delta: float) -> void:
 			anim.play("idle")
 	else:
 		anim.play("idle")
+		
 	sprite.flip_h = direction < 0 if direction !=0 else sprite.flip_h
 
-		
+func die() -> void:
+	if not is_alive:
+		return # evita que se ejecute dos veces
+	
+	is_alive = false
+	# anim.play("death") # si tienes una animación de muerte
+	set_physics_process(false) # desactiva movimiento temporal
+	
+	# Espera un momento y reinicia la escena
+	await get_tree().create_timer(0.7).timeout
+	get_tree().reload_current_scene()
 	
